@@ -1,0 +1,1 @@
+# Solo usa módulos estándar de Python, no requiere dependencias externas

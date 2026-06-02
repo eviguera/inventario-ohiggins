@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventario - PB Luneta</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+.container { max-width: 1400px; margin: auto; }
+
+h1 { font-size: 24px; margin-bottom: 20px; color: #1a1a2e; }
+h1 small { font-size: 14px; font-weight: normal; color: #666; }
+
+.tabs { display: flex; gap: 0; margin-bottom: 20px; flex-wrap: wrap; }
+.tab-btn { padding: 12px 28px; border: none; background: #ddd; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; border-radius: 8px 8px 0 0; }
+.tab-btn.active { background: #1a1a2e; color: #fff; }
+.tab-btn:hover:not(.active) { background: #ccc; }
+
+.tab-content { display: none; background: #fff; border-radius: 0 8px 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px; }
+.tab-content.active { display: block; }
+
+/* Buscar */
+.search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.search-bar input, .search-bar select { padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+.search-bar input[type="text"] { flex: 1; min-width: 200px; }
+.search-bar select { min-width: 140px; }
+.search-bar button { padding: 10px 24px; background: #1a1a2e; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.search-bar button:hover { background: #16213e; }
+.search-bar .btn-clear { background: #888; }
+.search-bar .btn-clear:hover { background: #666; }
+
+.stats { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-card { background: #f8f9fa; border-radius: 8px; padding: 12px 20px; font-size: 13px; border: 1px solid #e9ecef; }
+.stat-card strong { font-size: 18px; color: #1a1a2e; display: block; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: #1a1a2e; color: #fff; }
+th { padding: 10px 8px; text-align: left; font-weight: 600; white-space: nowrap; cursor: pointer; position: relative; user-select: none; }
+th:hover { background: #16213e; }
+th .sort-arrow { margin-left: 4px; font-size: 10px; }
+td { padding: 8px; border-bottom: 1px solid #eee; }
+tr:hover { background: #f5f5f5; }
+tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
+
+.table-wrap { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+
+/* Agregar */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.form-group { display: flex; flex-direction: column; }
+.form-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
+.form-group input { padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+.form-group input:focus { outline: none; border-color: #1a1a2e; box-shadow: 0 0 0 2px rgba(26,26,46,0.15); }
+
+.form-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+.form-actions button { padding: 12px 32px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn-primary { background: #1a1a2e; color: #fff; }
+.btn-primary:hover { background: #16213e; }
+.btn-secondary { background: #888; color: #fff; }
+.btn-secondary:hover { background: #666; }
+.btn-danger { background: #dc3545; color: #fff; }
+.btn-danger:hover { background: #c82333; }
+
+.msg { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; display: none; }
+.msg.success { display: block; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.msg.error { display: block; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+/* Excel import */
+.import-box { border: 2px dashed #ccc; border-radius: 12px; padding: 40px; text-align: center; transition: 0.3s; cursor: pointer; }
+.import-box:hover, .import-box.dragover { border-color: #1a1a2e; background: #f8f9ff; }
+.import-box h3 { font-size: 18px; color: #555; margin-bottom: 8px; }
+.import-box p { font-size: 13px; color: #999; }
+.import-box input[type="file"] { display: none; }
+
+.import-preview { margin-top: 20px; }
+.import-preview h3 { font-size: 16px; margin-bottom: 10px; }
+.import-preview .preview-count { font-size: 13px; color: #666; margin-bottom: 10px; }
+
+.column-map { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; align-items: center; }
+.column-map select { padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+.column-map label { font-size: 13px; font-weight: 600; }
+
+/* responsive */
+@media (max-width: 768px) {
+  .search-bar { flex-direction: column; }
+  .search-bar input[type="text"] { min-width: unset; }
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .tab-btn { font-size: 12px; padding: 10px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Inventario <small>PB Luneta</small></h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="buscar">Buscar Productos</button>
+    <button class="tab-btn" data-tab="agregar">Agregar Producto</button>
+    <button class="tab-btn" data-tab="importar">Importar Excel</button>
+  </div>
+
+  <!-- TAB BUSCAR -->
+  <div id="tab-buscar" class="tab-content active">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Buscar por marca, modelo, atril, vidrio...">
+      <select id="searchField">
+        <option value="todo">Todo</option>
+        <option value="MARCA">Marca</option>
+        <option value="modelo">Modelo</option>
+        <option value="Atril">Atril</option>
+        <option value="VIDRIO">Vidrio</option>
+        <option value="OBSERVACION">Observación</option>
+      </select>
+      <button id="btnSearch">Buscar</button>
+      <button id="btnClear" class="btn-clear">Limpiar</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="MARCA">Marca <span class="sort-arrow"></span></th>
+            <th data-col="modelo">Modelo <span class="sort-arrow"></span></th>
+            <th data-col="Año">Año <span class="sort-arrow"></span></th>
+            <th data-col="Atril">Atril <span class="sort-arrow"></span></th>
+            <th data-col="VIDRIO">Vidrio <span class="sort-arrow"></span></th>
+            <th data-col="OBSERVACION">Observación <span class="sort-arrow"></span></th>
+            <th data-col="Stock">Stock <span class="sort-arrow"></span></th>
+            <th data-col="COSTO_COMPRA">Costo <span class="sort-arrow"></span></th>
+            <th data-col="PRECIO_VENTA">Precio Venta <span class="sort-arrow"></span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB AGREGAR -->
+  <div id="tab-agregar" class="tab-content">
+    <div id="msg" class="msg"></div>
+    <form id="addForm" autocomplete="off">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Marca</label>
+          <input type="text" id="fMarca" placeholder="Ej: TOYOTA">
+        </div>
+        <div class="form-group">
+          <label>Modelo</label>
+          <input type="text" id="fModelo" placeholder="Ej: COROLLA">
+        </div>
+        <div class="form-group">
+          <label>Año</label>
+          <input type="text" id="fAno" placeholder="Ej: 2020, 2010-2015">
+        </div>
+        <div class="form-group">
+          <label>Atril (ubicación)</label>
+          <input type="text" id="fAtril" placeholder="Ej: A1, B2">
+        </div>
+        <div class="form-group">
+          <label>Vidrio</label>
+          <input type="text" id="fVidrio" placeholder="Ej: PB, LUNETA">
+        </div>
+        <div class="form-group">
+          <label>Observación</label>
+          <input type="text" id="fObs" placeholder="Ej: PRESENTAR PRIMERO">
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" id="fStock" min="0" step="1" value="1">
+        </div>
+        <div class="form-group">
+          <label>Costo Compra ($)</label>
+          <input type="number" id="fCosto" min="0" step="1" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Precio Venta ($)</label>
+          <input type="number" id="fPrecio" min="0" step="1" placeholder="0">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Agregar Producto</button>
+        <button type="reset" class="btn-secondary">Limpiar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TAB IMPORTAR EXCEL -->
+  <div id="tab-importar" class="tab-content">
+    <div id="importMsg" class="msg"></div>
+    <div class="import-box" id="dropZone">
+      <h3>Subir archivo Excel</h3>
+      <p>Arrastra el archivo .xlsx aquí o haz clic para seleccionarlo</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls">
+    </div>
+
+    <div id="importPreview" class="import-preview" style="display:none">
+      <h3>Vista previa de importación</h3>
+      <div class="column-map" id="columnMap"></div>
+      <p class="preview-count" id="previewCount"></p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="previewHead"></tr></thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+      <div class="form-actions">
+        <button id="btnImport" class="btn-primary">Importar productos</button>
+        <button id="btnCancelImport" class="btn-secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let productos = [];
+let filtered = [];
+let sortCol = null;
+let sortDir = 1;
+let importData = [];
+
+const MAPEO = {
+  'MARCA': ['marca', 'brand', 'marc'],
+  'modelo': ['modelo', 'model', 'model'],
+  'Año': ['año', 'ano', 'a�o', 'year', 'año'],
+  'Atril': ['atril', 'racket', 'ubicacion', 'ubicación', 'posicion', 'posición'],
+  'VIDRIO': ['vidrio', 'glass', 'cristal', 'tipo'],
+  'OBSERVACION': ['observacion', 'observación', 'obs', 'nota', 'note', 'comentario'],
+  'Stock': ['stock', 'cantidad', 'qty', 'quantity', 'invent'],
+  'COSTO_COMPRA': ['costo', 'cost', 'costo compra', 'precio compra', 'compra'],
+  'PRECIO_VENTA': ['precio', 'price', 'precio venta', 'venta', 'precio vent', 'pvp']
+};
+
+function guardarDatos() {
+  fetch('/api/productos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify([])
+  });
+}
+
+async function cargarDatos() {
+  try {
+    const res = await fetch('/api/productos');
+    if (!res.ok) throw new Error('Sin servidor');
+    productos = await res.json();
+    filtered = [...productos];
+    render();
+  } catch (e) {
+    document.getElementById('tableBody').innerHTML = '<tr class="empty"><td colspan="9">Sin datos. Importa un Excel o agrega productos manualmente.</td></tr>';
+  }
+}
+
+function agregarAlServidor(nuevos) {
+  fetch('/api/productos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(nuevos)
+  });
+}
+
+function render() {
+  const tbody = document.getElementById('tableBody');
+  const stats = document.getElementById('stats');
+
+  if (sortCol) {
+    filtered.sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return -1 * sortDir;
+      if (va > vb) return 1 * sortDir;
+      return 0;
+    });
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr class="empty"><td colspan="9">No se encontraron productos</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => {
+    const costo = p.COSTO_COMPRA ? '$' + Number(p.COSTO_COMPRA).toLocaleString() : '-';
+    const precio = p.PRECIO_VENTA ? '$' + Number(p.PRECIO_VENTA).toLocaleString() : '-';
+    return `<tr>
+      <td>${p.MARCA}</td>
+      <td>${p.modelo}</td>
+      <td>${p.Año}</td>
+      <td>${p.Atril}</td>
+      <td>${p.VIDRIO}</td>
+      <td>${p.OBSERVACION}</td>
+      <td>${p.Stock || 0}</td>
+      <td>${costo}</td>
+      <td>${precio}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('th .sort-arrow').forEach(el => el.textContent = '');
+  if (sortCol) {
+    const th = document.querySelector(`th[data-col="${sortCol}"]`);
+    if (th) th.querySelector('.sort-arrow').textContent = sortDir === 1 ? '▲' : '▼';
+  }
+}
+
+function buscar() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const field = document.getElementById('searchField').value;
+  filtered = !q ? [...productos] : productos.filter(p => {
+    if (field === 'todo') return Object.values(p).some(v => String(v).toLowerCase().includes(q));
+    return String(p[field] || '').toLowerCase().includes(q);
+  });
+  render();
+}
+
+// ------ TABS ------
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ------ SORT ------
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) { sortDir *= -1; }
+    else { sortCol = col; sortDir = 1; }
+    render();
+  });
+});
+
+// ------ ADD PRODUCT ------
+document.getElementById('addForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  msg.className = 'msg';
+  msg.style.display = 'none';
+
+  const nuevo = {
+    MARCA: document.getElementById('fMarca').value.trim().toUpperCase(),
+    modelo: document.getElementById('fModelo').value.trim(),
+    Año: document.getElementById('fAno').value.trim(),
+    Atril: document.getElementById('fAtril').value.trim(),
+    VIDRIO: document.getElementById('fVidrio').value.trim(),
+    OBSERVACION: document.getElementById('fObs').value.trim(),
+    Stock: parseInt(document.getElementById('fStock').value) || 0,
+    COSTO_COMPRA: parseFloat(document.getElementById('fCosto').value) || 0,
+    PRECIO_VENTA: parseFloat(document.getElementById('fPrecio').value) || 0
+  };
+
+  if (!nuevo.MARCA && !nuevo.modelo) {
+    msg.className = 'msg error';
+    msg.textContent = 'Debe ingresar al menos Marca o Modelo.';
+    msg.style.display = 'block';
+    return;
+  }
+
+  productos.push(nuevo);
+  agregarAlServidor([nuevo]);
+  filtered = [...productos];
+  render();
+  document.getElementById('addForm').reset();
+  msg.className = 'msg success';
+  msg.textContent = 'Producto agregado correctamente.';
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+
+  document.querySelector('[data-tab="buscar"]').click();
+  document.getElementById('searchInput').value = nuevo.MARCA || nuevo.modelo;
+  buscar();
+});
+
+document.getElementById('btnSearch').addEventListener('click', buscar);
+document.getElementById('btnClear').addEventListener('click', () => {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchField').value = 'todo';
+  buscar();
+});
+document.getElementById('searchInput').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') buscar();
+});
+
+// ------ EXCEL IMPORT ------
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) procesarArchivo(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) procesarArchivo(fileInput.files[0]);
+});
+
+function encontrarColumna(headers, posibles) {
+  for (let i = 0; i < headers.length; i++) {
+    const h = String(headers[i] || '').toLowerCase().trim();
+    for (const p of posibles) {
+      if (h === p || h.includes(p)) return i;
+    }
+  }
+  return -1;
+}
+
+function safeStr(v) {
+  if (v == null) return '';
+  if (typeof v === 'number') return String(v);
+  return String(v).trim();
+}
+
+function safeNum(v) {
+  if (v == null) return 0;
+  if (typeof v === 'number') return v;
+  const n = parseFloat(String(v).replace(/[$,]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+function procesarArchivo(file) {
+  const importMsg = document.getElementById('importMsg');
+  importMsg.className = 'msg';
+  importMsg.style.display = 'none';
+
+  if (!file.name.match(/\.xlsx?$/i)) {
+    showImportError('El archivo debe ser .xlsx o .xls');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (raw.length < 2) { showImportError('El archivo no tiene suficientes datos.'); return; }
+
+      const headers = raw[0].map(h => String(h || '').trim());
+      const colMap = {};
+      for (const [key, posibles] of Object.entries(MAPEO)) {
+        colMap[key] = encontrarColumna(headers, posibles);
+      }
+
+      renderColumnMap(headers, colMap);
+
+      importData = [];
+      for (let r = 1; r < raw.length; r++) {
+        const row = raw[r];
+        if (!row || row.every(c => c == null || c === '')) continue;
+        const p = {};
+        for (const key of Object.keys(MAPEO)) {
+          const ci = colMap[key];
+          if (ci >= 0 && ci < row.length) {
+            if (key === 'Stock' || key === 'COSTO_COMPRA' || key === 'PRECIO_VENTA') {
+              p[key] = safeNum(row[ci]);
+            } else if (key === 'MARCA') {
+              p[key] = safeStr(row[ci]).toUpperCase();
+            } else {
+              p[key] = safeStr(row[ci]);
+            }
+          } else {
+            p[key] = key === 'Stock' || key === 'COSTO_COMPRA' || key === 'PRECIO_VENTA' ? 0 : '';
+          }
+        }
+        importData.push(p);
+      }
+
+      if (importData.length === 0) { showImportError('No se encontraron filas con datos.'); return; }
+
+      renderPreview(importData.slice(0, 50));
+      document.getElementById('previewCount').textContent =
+        `Mostrando 50 de ${importData.length} filas encontradas.`;
+
+      document.getElementById('importPreview').style.display = 'block';
+      importMsg.style.display = 'none';
+
+    } catch (err) {
+      showImportError('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showImportError(msg) {
+  const el = document.getElementById('importMsg');
+  el.className = 'msg error';
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('importPreview').style.display = 'none';
+}
+
+function renderColumnMap(headers, colMap) {
+  const container = document.getElementById('columnMap');
+  let html = '<span style="font-size:13px;font-weight:600;">Columnas detectadas:</span>';
+  for (const [key, idx] of Object.entries(colMap)) {
+    const label = {
+      'MARCA': 'Marca', 'modelo': 'Modelo', 'Año': 'Año', 'Atril': 'Atril',
+      'VIDRIO': 'Vidrio', 'OBSERVACION': 'Obs', 'Stock': 'Stock',
+      'COSTO_COMPRA': 'Costo', 'PRECIO_VENTA': 'Precio Venta'
+    }[key];
+    const icon = idx >= 0 ? '✅' : '❌';
+    const colName = idx >= 0 ? headers[idx] : '(no detectada)';
+    html += `<span style="font-size:12px;padding:4px 10px;background:#f0f2f5;border-radius:4px;">${icon} ${label}: <strong>${colName}</strong></span>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderPreview(data) {
+  const keys = ['MARCA', 'modelo', 'Año', 'Atril', 'VIDRIO', 'OBSERVACION', 'Stock', 'COSTO_COMPRA', 'PRECIO_VENTA'];
+  const labels = ['Marca', 'Modelo', 'Año', 'Atril', 'Vidrio', 'Obs', 'Stock', 'Costo', 'Precio Venta'];
+  document.getElementById('previewHead').innerHTML = labels.map(l => `<th>${l}</th>`).join('');
+  document.getElementById('previewBody').innerHTML = data.map(p => {
+    const costo = p.COSTO_COMPRA ? '$' + Number(p.COSTO_COMPRA).toLocaleString() : '-';
+    const precio = p.PRECIO_VENTA ? '$' + Number(p.PRECIO_VENTA).toLocaleString() : '-';
+    return `<tr>
+      <td>${p.MARCA}</td>
+      <td>${p.modelo}</td>
+      <td>${p.Año}</td>
+      <td>${p.Atril}</td>
+      <td>${p.VIDRIO}</td>
+      <td>${p.OBSERVACION}</td>
+      <td>${p.Stock || 0}</td>
+      <td>${costo}</td>
+      <td>${precio}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('btnImport').addEventListener('click', () => {
+  if (!importData.length) return;
+  let added = 0;
+  const nuevos = [];
+  for (const p of importData) {
+    if (!p.MARCA && !p.modelo) continue;
+    productos.push(p);
+    nuevos.push(p);
+    added++;
+  }
+  if (nuevos.length) agregarAlServidor(nuevos);
+  filtered = [...productos];
+  render();
+
+  const importMsg = document.getElementById('importMsg');
+  importMsg.className = 'msg success';
+  importMsg.textContent = `Se importaron ${added} productos correctamente. Total: ${productos.length} productos.`;
+  importMsg.style.display = 'block';
+
+  document.getElementById('importPreview').style.display = 'none';
+  importData = [];
+  fileInput.value = '';
+  document.querySelector('[data-tab="buscar"]').click();
+  buscar();
+});
+
+document.getElementById('btnCancelImport').addEventListener('click', () => {
+  document.getElementById('importPreview').style.display = 'none';
+  importData = [];
+  fileInput.value = '';
+  document.getElementById('importMsg').style.display = 'none';
+});
+
+cargarDatos();
+</script>
+</body>
+</html>
