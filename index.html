@@ -178,6 +178,7 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
     <button class="tab-btn active" data-tab="buscar">Buscar Productos</button>
     <button class="tab-btn" data-tab="agregar">Agregar Producto</button>
     <button class="tab-btn" data-tab="ventas">Ventas</button>
+    <button class="tab-btn" data-tab="cotizacion">Cotizacion</button>
     <button class="tab-btn" data-tab="importar">Importar Excel</button>
     <button class="tab-btn" data-tab="movimientos">Movimientos</button>
   </div>
@@ -349,6 +350,83 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
             </tr>
           </thead>
           <tbody id="ventasBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB COTIZACION -->
+  <div id="tab-cotizacion" class="tab-content">
+    <div id="cotizacionMsg" class="msg"></div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <!-- Panel izquierdo: Productos de tu inventario -->
+      <div>
+        <h3 style="margin-bottom:16px;color:#1a1a2e;">Productos de tu Inventario</h3>
+        <input type="text" id="buscarCotizacion" placeholder="Buscar producto para cotizar..." style="width:100%;padding:10px 14px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px;">
+        <div id="resultadosCotizacion" style="max-height:400px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Panel derecho: Cotización actual -->
+      <div>
+        <h3 style="margin-bottom:16px;color:#1a1a2e;">Cotización Actual</h3>
+        
+        <div style="background:#f8f9fa;border-radius:8px;padding:16px;margin-bottom:16px;">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Cliente</label>
+            <input type="text" id="cotizacionCliente" placeholder="Nombre del cliente">
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Contacto</label>
+            <input type="text" id="cotizacionContacto" placeholder="Telefono o email">
+          </div>
+          <div class="form-group">
+            <label>Observaciones</label>
+            <input type="text" id="cotizacionObs" placeholder="Notas...">
+          </div>
+        </div>
+
+        <div id="productosCotizacion" style="max-height:300px;overflow-y:auto;margin-bottom:16px;"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-size:20px;font-weight:700;color:#1a1a2e;">
+            Total: <span id="totalCotizacion">$0</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button onclick="guardarCotizacion()" style="flex:1;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Guardar Cotización</button>
+          <button onclick="limpiarCotizacion()" style="padding:12px 20px;background:#888;color:#fff;border:none;border-radius:8px;cursor:pointer;">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enlace al proveedor -->
+    <div style="margin-top:24px;padding:20px;background:#e8f4fd;border-radius:10px;border:1px solid #b8daff;">
+      <h4 style="margin-bottom:12px;color:#0c5460;">Catálogo del Proveedor - Autovidrios</h4>
+      <p style="margin-bottom:12px;color:#0c5460;font-size:14px;">
+        Revisa precios y disponibilidad directamente en el catálogo de tu proveedor:
+      </p>
+      <a href="https://www.autovidrios.cl/index.php?page=shop.browse&option=com_virtuemart" target="_blank" style="display:inline-block;padding:12px 24px;background:#0f3460;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">
+        Abrir Catálogo Autovidrios
+      </a>
+    </div>
+
+    <!-- Historial de cotizaciones -->
+    <div style="margin-top:24px;">
+      <h3 style="margin-bottom:16px;color:#1a1a2e;">Cotizaciones Guardadas</h3>
+      <div class="table-wrap" style="max-height:300px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Productos</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="cotizacionesBody"></tbody>
         </table>
       </div>
     </div>
@@ -1200,6 +1278,189 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.tab === 'ventas') {
       cargarVentasHoy();
+    }
+  });
+});
+
+// ===== COTIZACION =====
+let productosCotizacion = [];
+
+function buscarCotizacion() {
+  const q = document.getElementById('buscarCotizacion').value.trim().toLowerCase();
+  const container = document.getElementById('resultadosCotizacion');
+  
+  if (!q) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  const resultados = productos.filter(p => {
+    const texto = `${p.MARCA} ${p.modelo} ${p.Atril} ${p.VIDRIO} ${p.OBSERVACION}`.toLowerCase();
+    return texto.includes(q);
+  }).slice(0, 15);
+  
+  if (resultados.length === 0) {
+    container.innerHTML = '<p style="color:#999;padding:8px;">No se encontraron productos</p>';
+    return;
+  }
+  
+  container.innerHTML = resultados.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f8f9fa;border-radius:6px;margin-bottom:6px;">
+      <div>
+        <strong>${p.MARCA} ${p.modelo}</strong> - ${p.VIDRIO} 
+        <span style="color:#888;font-size:12px;">Stock: ${p.Stock}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:600;color:#27ae60;">$${Number(p.PRECIO_VENTA).toLocaleString()}</span>
+        <button onclick="agregarProductoCotizacion(${p.id})" style="padding:4px 12px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Agregar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function agregarProductoCotizacion(productoId) {
+  const producto = productos.find(p => p.id === productoId);
+  if (!producto) return;
+  
+  const existente = productosCotizacion.find(p => p.producto_id === productoId);
+  if (existente) {
+    existente.cantidad++;
+  } else {
+    productosCotizacion.push({
+      producto_id: productoId,
+      MARCA: producto.MARCA,
+      modelo: producto.modelo,
+      VIDRIO: producto.VIDRIO,
+      cantidad: 1,
+      precio_unitario: producto.PRECIO_VENTA
+    });
+  }
+  
+  renderProductosCotizacion();
+}
+
+function renderProductosCotizacion() {
+  const container = document.getElementById('productosCotizacion');
+  
+  if (productosCotizacion.length === 0) {
+    container.innerHTML = '<p style="color:#999;padding:12px;text-align:center;">Agrega productos a la cotización</p>';
+    document.getElementById('totalCotizacion').textContent = '$0';
+    return;
+  }
+  
+  let total = 0;
+  container.innerHTML = productosCotizacion.map((p, idx) => {
+    const subtotal = p.cantidad * p.precio_unitario;
+    total += subtotal;
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fff;border:1px solid #eee;border-radius:6px;margin-bottom:6px;">
+        <div>
+          <strong>${p.MARCA} ${p.modelo}</strong> - ${p.VIDRIO}
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button onclick="cambiarCantidadCotizacion(${idx}, -1)" style="width:28px;height:28px;background:#f0f0f0;border:none;border-radius:4px;cursor:pointer;">-</button>
+            <span style="min-width:30px;text-align:center;font-weight:600;">${p.cantidad}</span>
+            <button onclick="cambiarCantidadCotizacion(${idx}, 1)" style="width:28px;height:28px;background:#f0f0f0;border:none;border-radius:4px;cursor:pointer;">+</button>
+          </div>
+          <span style="font-weight:600;color:#27ae60;min-width:100px;text-align:right;">$${subtotal.toLocaleString()}</span>
+          <button onclick="quitarProductoCotizacion(${idx})" style="padding:4px 10px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Quitar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('totalCotizacion').textContent = '$' + total.toLocaleString();
+}
+
+function cambiarCantidadCotizacion(idx, delta) {
+  productosCotizacion[idx].cantidad += delta;
+  if (productosCotizacion[idx].cantidad <= 0) {
+    productosCotizacion.splice(idx, 1);
+  }
+  renderProductosCotizacion();
+}
+
+function quitarProductoCotizacion(idx) {
+  productosCotizacion.splice(idx, 1);
+  renderProductosCotizacion();
+}
+
+function limpiarCotizacion() {
+  productosCotizacion = [];
+  document.getElementById('cotizacionCliente').value = '';
+  document.getElementById('cotizacionContacto').value = '';
+  document.getElementById('cotizacionObs').value = '';
+  document.getElementById('buscarCotizacion').value = '';
+  document.getElementById('resultadosCotizacion').innerHTML = '';
+  renderProductosCotizacion();
+}
+
+async function guardarCotizacion() {
+  if (productosCotizacion.length === 0) {
+    alert('Agrega al menos un producto a la cotización');
+    return;
+  }
+  
+  const cotizacion = {
+    fecha: new Date().toISOString(),
+    cliente: document.getElementById('cotizacionCliente').value.trim(),
+    contacto: document.getElementById('cotizacionContacto').value.trim(),
+    observaciones: document.getElementById('cotizacionObs').value.trim(),
+    productos: productosCotizacion,
+    total: productosCotizacion.reduce((sum, p) => sum + (p.cantidad * p.precio_unitario), 0),
+    estado: 'pendiente'
+  };
+  
+  // Guardar en localStorage
+  const cotizaciones = JSON.parse(localStorage.getItem('cotizaciones') || '[]');
+  cotizaciones.push(cotizacion);
+  localStorage.setItem('cotizaciones', JSON.stringify(cotizaciones));
+  
+  // Mostrar mensaje
+  const msg = document.getElementById('cotizacionMsg');
+  msg.className = 'msg success';
+  msg.textContent = `Cotización guardada. Total: $${cotizacion.total.toLocaleString()}`;
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 5000);
+  
+  limpiarCotizacion();
+  cargarCotizaciones();
+}
+
+function cargarCotizaciones() {
+  const cotizaciones = JSON.parse(localStorage.getItem('cotizaciones') || '[]');
+  const tbody = document.getElementById('cotizacionesBody');
+  
+  if (cotizaciones.length === 0) {
+    tbody.innerHTML = '<tr class="empty"><td colspan="5">No hay cotizaciones guardadas</td></tr>';
+    return;
+  }
+  
+  // Ordenar por fecha descendente
+  cotizaciones.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  
+  tbody.innerHTML = cotizaciones.map((c, idx) => {
+    const fecha = new Date(c.fecha).toLocaleString('es-CL');
+    const productosText = c.productos.map(p => `${p.MARCA} ${p.modelo} x${p.cantidad}`).join(', ');
+    return `<tr>
+      <td>${fecha}</td>
+      <td>${c.cliente || '-'}</td>
+      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${productosText}</td>
+      <td style="font-weight:600;color:#27ae60;">$${c.total.toLocaleString()}</td>
+      <td><span style="padding:4px 10px;background:#fff3cd;color:#856404;border-radius:4px;font-size:12px;">${c.estado}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// Evento para buscar en cotización
+document.getElementById('buscarCotizacion').addEventListener('keyup', buscarCotizacion);
+
+// Cargar cotizaciones cuando se abre la pestaña
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'cotizacion') {
+      cargarCotizaciones();
     }
   });
 });
