@@ -157,11 +157,7 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
       <div class="label">Unidades Totales</div>
       <div class="value" id="statUnidades">-</div>
     </div>
-    <div class="stat-card success">
-      <div class="label">Valor Inventario</div>
-      <div class="value" id="statValor">-</div>
-      <div class="sub">Precio venta</div>
-    </div>
+
   </div>
 
   <!-- Alert Banner -->
@@ -180,7 +176,7 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
     <button class="tab-btn" data-tab="ventas">Ventas</button>
     <button class="tab-btn" data-tab="cotizacion">Cotizacion</button>
     <button class="tab-btn" data-tab="importar">Importar Excel</button>
-    <button class="tab-btn" data-tab="movimientos">Movimientos</button>
+
   </div>
 
   <!-- TAB BUSCAR -->
@@ -463,24 +459,7 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
     </div>
   </div>
 
-  <!-- TAB MOVIMIENTOS -->
-  <div id="tab-movimientos" class="tab-content">
-    <h3 style="margin-bottom:16px;">Historial de Movimientos de Stock</h3>
-    <div class="table-wrap" style="max-height:500px;">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Motivo</th>
-          </tr>
-        </thead>
-        <tbody id="movimientosBody"></tbody>
-      </table>
-    </div>
-  </div>
+
 </div>
 
 <!-- Modal Entrada/Salida -->
@@ -963,38 +942,7 @@ async function guardarMovimiento() {
   }
 }
 
-async function cargarMovimientos() {
-  try {
-    const movimientos = await apiGet('/api/movimientos');
-    const tbody = document.getElementById('movimientosBody');
-    
-    if (movimientos.length === 0) {
-      tbody.innerHTML = '<tr class="empty"><td colspan="5">No hay movimientos registrados</td></tr>';
-      return;
-    }
-    
-    // Ordenar por fecha descendente
-    movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-    
-    tbody.innerHTML = movimientos.slice(0, 100).map(m => {
-      const producto = productos.find(p => p.id === m.producto_id);
-      const nombre = producto ? `${producto.MARCA} ${producto.modelo}` : 'Producto eliminado';
-      const fecha = new Date(m.fecha).toLocaleString('es-CL');
-      const tipoClass = m.tipo === 'entrada' ? 'movimiento-entrada' : 'movimiento-salida';
-      const tipoText = m.tipo === 'entrada' ? 'ENTRADA' : 'SALIDA';
-      
-      return `<tr>
-        <td>${fecha}</td>
-        <td class="${tipoClass}">${tipoText}</td>
-        <td>${nombre}</td>
-        <td>${m.cantidad}</td>
-        <td>${m.motivo || '-'}</td>
-      </tr>`;
-    }).join('');
-  } catch (err) {
-    console.error('Error cargando movimientos:', err);
-  }
-}
+
 
 // ===== EDITAR =====
 function abrirEditModal(productoId) {
@@ -1471,6 +1419,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     }
   });
 });
+
+// Actualizar stats sin valor inventario
+document.getElementById('statValor')?.remove();
 
 // ===== INICIO =====
 cargarDatos();
