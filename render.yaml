@@ -1,0 +1,11 @@
+# Configuración de Render para Inventario O'Higgins
+services:
+  - type: web
+    name: inventario-ohiggins
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0

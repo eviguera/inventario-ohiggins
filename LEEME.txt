@@ -1,0 +1,89 @@
+========================================
+  SISTEMA DE INVENTARIO DE VIDRIOS
+  Equipamiento Automotriz O'Higgins
+========================================
+
+¿COMO INICIAR?
+
+1. Haz doble clic en el archivo: INICIAR.bat
+2. Se abrirá una ventana negra (no la cierres)
+3. Abre tu navegador (Chrome, Edge, etc.)
+4. Escribe en la barra de direcciones: http://localhost:8080
+5. ¡Listo! Ya puedes usar el sistema
+
+¿COMO CERRAR?
+
+En la ventana negra presiona Ctrl+C o simplemente cierra la ventana.
+
+========================================
+  FUNCIONES PRINCIPALES
+========================================
+
+BUSCAR PRODUCTOS:
+- Escribe en el buscador la marca, modelo o atril
+- Puedes filtrar por campo específico (marca, modelo, atril, etc.)
+- Presiona Enter o haz clic en "Buscar"
+
+AGREGAR PRODUCTO:
+- Ve a la pestaña "Agregar Producto"
+- Completa los campos (Marca y Modelo son obligatorios)
+- Haz clic en "Agregar Producto"
+
+GESTIONAR STOCK (ENTRADAS Y SALIDAS):
+- Busca el producto en la tabla
+- Usa el botón VERDE (+) para ingresar stock
+- Usa el botÓN ROJO (-) para quitar stock
+- Ingresa la cantidad y el motivo
+- Haz clic en "Guardar"
+
+EDITAR PRODUCTO:
+- Busca el producto
+- Haz clic en "Editar"
+- Modifica los campos necesarios
+- Haz clic en "Guardar Cambios"
+
+ELIMINAR PRODUCTO:
+- Busca el producto
+- Haz clic en "Eliminar"
+- Confirma la eliminación
+
+VER MOVIMIENTOS:
+- Ve a la pestaña "Movimientos"
+- Aquí verás el historial de todas las entradas y salidas
+
+IMPORTAR DESDE EXCEL:
+- Ve a la pestaña "Importar Excel"
+- Arrastra tu archivo .xlsx o haz clic para seleccionarlo
+- Selecciona la hoja que contiene los datos de vidrios
+- Revisa la vista previa
+- Haz clic en "Importar productos"
+
+ALERTAS:
+- Cuando un producto tiene stock bajo (0 o 1), aparece en rojo
+- Un banner amarillo te avisa cuántos productos necesitan atención
+
+========================================
+  ESTRUCTURA DEL EXCEL
+========================================
+
+El sistema lee automáticamente las hojas:
+- "PB LUNETA" (939 productos)
+- "NUEVO VP" (370 productos)
+- "INVENTARIO CYNDY" (16 productos)
+
+Columnas esperadas en el Excel:
+- MARCA: Marca del vehículo
+- modelo: Modelo del vehículo
+- Año: Año o rango de años
+- Atril: Ubicación en el almacén
+- VIDRIO: Tipo de vidrio (PB, LUNETA, etc.)
+- OBSERVACION: Notas adicionales
+- Stock: Cantidad disponible
+- COSTO_COMPRA: Precio de compra
+- PRECIO_VENTA: Precio de venta
+
+========================================
+  SOPORTE
+========================================
+
+Si tienes dudas o problemas, contacta al administrador del sistema.

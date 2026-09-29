@@ -1,1 +1,2 @@
-# Solo usa módulos estándar de Python, no requiere dependencias externas
+# Dependencias para Render
+# El servidor usa solo módulos estándar de Python, no requiere dependencias externas

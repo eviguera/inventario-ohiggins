@@ -3,58 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inventario - PB Luneta</title>
+<title>Inventario - Equipamiento Automotriz O'Higgins</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
-.container { max-width: 1400px; margin: auto; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; }
+.container { max-width: 1400px; margin: auto; padding: 16px; }
 
-h1 { font-size: 24px; margin-bottom: 20px; color: #1a1a2e; }
-h1 small { font-size: 14px; font-weight: normal; color: #666; }
+/* Header */
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.header h1 { font-size: 22px; }
+.header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+.header .btn { background: #0f3460; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.header .btn:hover { background: #1a4a7a; }
 
-.tabs { display: flex; gap: 0; margin-bottom: 20px; flex-wrap: wrap; }
-.tab-btn { padding: 12px 28px; border: none; background: #ddd; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; border-radius: 8px 8px 0 0; }
-.tab-btn.active { background: #1a1a2e; color: #fff; }
+/* Stats Cards */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1a1a2e; }
+.stat-card.warning { border-left-color: #e74c3c; }
+.stat-card.success { border-left-color: #27ae60; }
+.stat-card.info { border-left-color: #3498db; }
+.stat-card .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .value { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-top: 4px; }
+.stat-card .sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+/* Alert Banner */
+.alert-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.alert-banner .icon { font-size: 24px; }
+.alert-banner .text { flex: 1; }
+.alert-banner .text strong { color: #856404; }
+.alert-banner .text span { color: #856404; font-size: 13px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
+.tab-btn { padding: 12px 24px; border: none; background: #ddd; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; border-radius: 8px 8px 0 0; }
+.tab-btn.active { background: #fff; color: #1a1a2e; }
 .tab-btn:hover:not(.active) { background: #ccc; }
 
-.tab-content { display: none; background: #fff; border-radius: 0 8px 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px; }
+.tab-content { display: none; background: #fff; border-radius: 0 8px 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 20px; }
 .tab-content.active { display: block; }
 
-/* Buscar */
-.search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-.search-bar input, .search-bar select { padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+/* Search */
+.search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.search-bar input, .search-bar select { padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
 .search-bar input[type="text"] { flex: 1; min-width: 200px; }
-.search-bar select { min-width: 140px; }
-.search-bar button { padding: 10px 24px; background: #1a1a2e; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.search-bar button { padding: 10px 20px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
 .search-bar button:hover { background: #16213e; }
-.search-bar .btn-clear { background: #888; }
-.search-bar .btn-clear:hover { background: #666; }
 
-.stats { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.stat-card { background: #f8f9fa; border-radius: 8px; padding: 12px 20px; font-size: 13px; border: 1px solid #e9ecef; }
-.stat-card strong { font-size: 18px; color: #1a1a2e; display: block; }
-
+/* Table */
+.table-wrap { overflow-x: auto; max-height: 550px; overflow-y: auto; border-radius: 8px; border: 1px solid #eee; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead { background: #1a1a2e; color: #fff; }
-th { padding: 10px 8px; text-align: left; font-weight: 600; white-space: nowrap; cursor: pointer; position: relative; user-select: none; }
-th:hover { background: #16213e; }
-th .sort-arrow { margin-left: 4px; font-size: 10px; }
+thead { background: #1a1a2e; color: #fff; position: sticky; top: 0; z-index: 10; }
+th { padding: 10px 8px; text-align: left; font-weight: 600; white-space: nowrap; }
 td { padding: 8px; border-bottom: 1px solid #eee; }
-tr:hover { background: #f5f5f5; }
+tr:hover { background: #f8f9fa; }
 tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
 
-.table-wrap { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+.stock-low { color: #e74c3c; font-weight: 700; }
+.stock-ok { color: #27ae60; font-weight: 600; }
+.stock-zero { color: #999; }
 
-/* Agregar */
+/* Action Buttons in Table */
+.action-btns { display: flex; gap: 4px; }
+.action-btns button { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.btn-in { background: #d4edda; color: #155724; }
+.btn-in:hover { background: #c3e6cb; }
+.btn-out { background: #f8d7da; color: #721c24; }
+.btn-out:hover { background: #f5c6cb; }
+.btn-edit { background: #d1ecf1; color: #0c5460; }
+.btn-edit:hover { background: #bee5eb; }
+.btn-del { background: #f5c6cb; color: #721c24; }
+.btn-del:hover { background: #f1b0b7; }
+
+/* Forms */
 .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
 .form-group { display: flex; flex-direction: column; }
 .form-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
-.form-group input { padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-.form-group input:focus { outline: none; border-color: #1a1a2e; box-shadow: 0 0 0 2px rgba(26,26,46,0.15); }
+.form-group input, .form-group select { padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #1a1a2e; box-shadow: 0 0 0 2px rgba(26,26,46,0.15); }
 
 .form-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-.form-actions button { padding: 12px 32px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.form-actions button { padding: 12px 28px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
 .btn-primary { background: #1a1a2e; color: #fff; }
 .btn-primary:hover { background: #16213e; }
 .btn-secondary { background: #888; color: #fff; }
@@ -62,42 +91,95 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
 .btn-danger { background: #dc3545; color: #fff; }
 .btn-danger:hover { background: #c82333; }
 
-.msg { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; display: none; }
+/* Messages */
+.msg { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; }
 .msg.success { display: block; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 .msg.error { display: block; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-/* Excel import */
+/* Import */
 .import-box { border: 2px dashed #ccc; border-radius: 12px; padding: 40px; text-align: center; transition: 0.3s; cursor: pointer; }
 .import-box:hover, .import-box.dragover { border-color: #1a1a2e; background: #f8f9ff; }
 .import-box h3 { font-size: 18px; color: #555; margin-bottom: 8px; }
 .import-box p { font-size: 13px; color: #999; }
 .import-box input[type="file"] { display: none; }
 
-.import-preview { margin-top: 20px; }
-.import-preview h3 { font-size: 16px; margin-bottom: 10px; }
-.import-preview .preview-count { font-size: 13px; color: #666; margin-bottom: 10px; }
+.sheet-select { margin: 16px 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sheet-select select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
 
-.column-map { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; align-items: center; }
-.column-map select { padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
-.column-map label { font-size: 13px; font-weight: 600; }
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+.modal-overlay.active { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+.modal h3 { margin-bottom: 16px; color: #1a1a2e; }
+.modal .form-group { margin-bottom: 12px; }
+.modal .form-actions { margin-top: 16px; }
 
-/* responsive */
+/* Movimientos Table */
+.movimiento-entrada { color: #27ae60; font-weight: 600; }
+.movimiento-salida { color: #e74c3c; font-weight: 600; }
+
+/* Responsive */
 @media (max-width: 768px) {
   .search-bar { flex-direction: column; }
   .search-bar input[type="text"] { min-width: unset; }
   .form-grid { grid-template-columns: 1fr 1fr; }
-  .tab-btn { font-size: 12px; padding: 10px 16px; }
+  .tab-btn { font-size: 12px; padding: 10px 14px; }
+  .header { flex-direction: column; text-align: center; }
 }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Inventario <small>PB Luneta</small></h1>
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Inventario de Vidrios</h1>
+      <p>Equipamiento Automotriz O'Higgins</p>
+    </div>
+    <button class="btn" onclick="cargarDatos()">Actualizar Datos</button>
+  </div>
 
+  <!-- Stats -->
+  <div class="stats" id="statsContainer">
+    <div class="stat-card info">
+      <div class="label">Total Productos</div>
+      <div class="value" id="statTotal">-</div>
+    </div>
+    <div class="stat-card success">
+      <div class="label">Con Stock</div>
+      <div class="value" id="statConStock">-</div>
+    </div>
+    <div class="stat-card warning">
+      <div class="label">Sin Stock</div>
+      <div class="value" id="statSinStock">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Unidades Totales</div>
+      <div class="value" id="statUnidades">-</div>
+    </div>
+    <div class="stat-card success">
+      <div class="label">Valor Inventario</div>
+      <div class="value" id="statValor">-</div>
+      <div class="sub">Precio venta</div>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  <div class="alert-banner" id="alertBanner" style="display:none">
+    <div class="icon">&#9888;</div>
+    <div class="text">
+      <strong>Alerta de Stock Bajo</strong>
+      <span id="alertText"></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="buscar">Buscar Productos</button>
     <button class="tab-btn" data-tab="agregar">Agregar Producto</button>
+    <button class="tab-btn" data-tab="ventas">Ventas</button>
     <button class="tab-btn" data-tab="importar">Importar Excel</button>
+    <button class="tab-btn" data-tab="movimientos">Movimientos</button>
   </div>
 
   <!-- TAB BUSCAR -->
@@ -110,25 +192,26 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
         <option value="modelo">Modelo</option>
         <option value="Atril">Atril</option>
         <option value="VIDRIO">Vidrio</option>
-        <option value="OBSERVACION">Observación</option>
+        <option value="OBSERVACION">Observacion</option>
       </select>
       <button id="btnSearch">Buscar</button>
-      <button id="btnClear" class="btn-clear">Limpiar</button>
+      <button id="btnClear" class="btn-secondary" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;">Limpiar</button>
     </div>
 
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th data-col="MARCA">Marca <span class="sort-arrow"></span></th>
-            <th data-col="modelo">Modelo <span class="sort-arrow"></span></th>
-            <th data-col="Año">Año <span class="sort-arrow"></span></th>
-            <th data-col="Atril">Atril <span class="sort-arrow"></span></th>
-            <th data-col="VIDRIO">Vidrio <span class="sort-arrow"></span></th>
-            <th data-col="OBSERVACION">Observación <span class="sort-arrow"></span></th>
-            <th data-col="Stock">Stock <span class="sort-arrow"></span></th>
-            <th data-col="COSTO_COMPRA">Costo <span class="sort-arrow"></span></th>
-            <th data-col="PRECIO_VENTA">Precio Venta <span class="sort-arrow"></span></th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Ano</th>
+            <th>Atril</th>
+            <th>Vidrio</th>
+            <th>Obs</th>
+            <th>Stock</th>
+            <th>Costo</th>
+            <th>Precio Venta</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -142,19 +225,19 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
     <form id="addForm" autocomplete="off">
       <div class="form-grid">
         <div class="form-group">
-          <label>Marca</label>
-          <input type="text" id="fMarca" placeholder="Ej: TOYOTA">
+          <label>Marca *</label>
+          <input type="text" id="fMarca" placeholder="Ej: TOYOTA" required>
         </div>
         <div class="form-group">
-          <label>Modelo</label>
-          <input type="text" id="fModelo" placeholder="Ej: COROLLA">
+          <label>Modelo *</label>
+          <input type="text" id="fModelo" placeholder="Ej: COROLLA" required>
         </div>
         <div class="form-group">
-          <label>Año</label>
+          <label>Ano</label>
           <input type="text" id="fAno" placeholder="Ej: 2020, 2010-2015">
         </div>
         <div class="form-group">
-          <label>Atril (ubicación)</label>
+          <label>Atril (ubicacion)</label>
           <input type="text" id="fAtril" placeholder="Ej: A1, B2">
         </div>
         <div class="form-group">
@@ -162,7 +245,7 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
           <input type="text" id="fVidrio" placeholder="Ej: PB, LUNETA">
         </div>
         <div class="form-group">
-          <label>Observación</label>
+          <label>Observacion</label>
           <input type="text" id="fObs" placeholder="Ej: PRESENTAR PRIMERO">
         </div>
         <div class="form-group">
@@ -185,20 +268,111 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
     </form>
   </div>
 
+  <!-- TAB VENTAS -->
+  <div id="tab-ventas" class="tab-content">
+    <div id="ventasMsg" class="msg"></div>
+    
+    <!-- Resumen del dia -->
+    <div class="stats" style="margin-bottom:20px;">
+      <div class="stat-card success">
+        <div class="label">Ventas de Hoy</div>
+        <div class="value" id="ventasHoyCantidad">0</div>
+      </div>
+      <div class="stat-card info">
+        <div class="label">Total Vendido Hoy</div>
+        <div class="value" id="ventasHoyTotal">$0</div>
+      </div>
+    </div>
+
+    <!-- Nueva Venta -->
+    <div style="background:#f8f9fa;border-radius:10px;padding:20px;margin-bottom:20px;">
+      <h3 style="margin-bottom:16px;color:#1a1a2e;">Registrar Nueva Venta</h3>
+      
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Cliente (opcional)</label>
+        <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Medio de Pago</label>
+        <select id="ventaMedioPago">
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="cheque">Cheque</option>
+          <option value="credito">Credito</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Observaciones</label>
+        <input type="text" id="ventaObs" placeholder="Notas adicionales...">
+      </div>
+
+      <!-- Buscar producto para venta -->
+      <div style="background:#fff;border-radius:8px;padding:16px;margin-top:16px;">
+        <h4 style="margin-bottom:12px;color:#555;">Agregar Producto a la Venta</h4>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="text" id="buscarProductoVenta" placeholder="Buscar por marca, modelo, atril..." style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ccc;border-radius:8px;">
+          <button onclick="buscarProductoVenta()" style="padding:10px 20px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;cursor:pointer;">Buscar</button>
+        </div>
+        <div id="resultadosVenta" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- Productos en la venta actual -->
+      <div id="productosVenta" style="margin-top:16px;"></div>
+
+      <!-- Total y boton -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;flex-wrap:wrap;gap:12px;">
+        <div style="font-size:24px;font-weight:700;color:#1a1a2e;">
+          Total: <span id="totalVentaActual">$0</span>
+        </div>
+        <button onclick="registrarVenta()" style="padding:14px 32px;background:#27ae60;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700;">
+          Registrar Venta
+        </button>
+      </div>
+    </div>
+
+    <!-- Historial de ventas -->
+    <div>
+      <h3 style="margin-bottom:16px;color:#1a1a2e;">Historial de Ventas</h3>
+      <div class="table-wrap" style="max-height:400px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Productos</th>
+              <th>Total</th>
+              <th>Medio Pago</th>
+              <th>Obs</th>
+            </tr>
+          </thead>
+          <tbody id="ventasBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- TAB IMPORTAR EXCEL -->
   <div id="tab-importar" class="tab-content">
     <div id="importMsg" class="msg"></div>
     <div class="import-box" id="dropZone">
       <h3>Subir archivo Excel</h3>
-      <p>Arrastra el archivo .xlsx aquí o haz clic para seleccionarlo</p>
+      <p>Arrastra el archivo .xlsx aqui o haz clic para seleccionarlo</p>
       <input type="file" id="fileInput" accept=".xlsx,.xls">
     </div>
 
-    <div id="importPreview" class="import-preview" style="display:none">
-      <h3>Vista previa de importación</h3>
-      <div class="column-map" id="columnMap"></div>
-      <p class="preview-count" id="previewCount"></p>
-      <div class="table-wrap">
+    <div id="sheetSelect" class="sheet-select" style="display:none">
+      <strong>Selecciona la hoja con datos de vidrios:</strong>
+      <select id="sheetSelectDropdown"></select>
+      <button class="btn-primary" onclick="procesarHojaSeleccionada()" style="padding:8px 16px;border:none;border-radius:8px;cursor:pointer;">Cargar Hoja</button>
+    </div>
+
+    <div id="importPreview" style="display:none; margin-top:20px;">
+      <h3 style="margin-bottom:10px;">Vista previa</h3>
+      <p id="previewCount" style="font-size:13px;color:#666;margin-bottom:10px;"></p>
+      <div class="table-wrap" style="max-height:300px;">
         <table>
           <thead><tr id="previewHead"></tr></thead>
           <tbody id="previewBody"></tbody>
@@ -210,130 +384,246 @@ tr.empty td { text-align: center; padding: 40px; color: #999; font-size: 15px; }
       </div>
     </div>
   </div>
+
+  <!-- TAB MOVIMIENTOS -->
+  <div id="tab-movimientos" class="tab-content">
+    <h3 style="margin-bottom:16px;">Historial de Movimientos de Stock</h3>
+    <div class="table-wrap" style="max-height:500px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody id="movimientosBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Entrada/Salida -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Movimiento de Stock</h3>
+    <div class="form-group">
+      <label>Producto</label>
+      <input type="text" id="modalProducto" readonly style="background:#f5f5f5;">
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="modalTipo">
+        <option value="entrada">Entrada (Ingresar stock)</option>
+        <option value="salida">Salida (Quitar stock)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Cantidad</label>
+      <input type="number" id="modalCantidad" min="1" step="1" value="1">
+    </div>
+    <div class="form-group">
+      <label>Motivo</label>
+      <input type="text" id="modalMotivo" placeholder="Ej: Venta, Compra, Devolucion...">
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarMovimiento()">Guardar</button>
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal">
+    <h3>Editar Producto</h3>
+    <div class="form-group">
+      <label>Marca</label>
+      <input type="text" id="editMarca">
+    </div>
+    <div class="form-group">
+      <label>Modelo</label>
+      <input type="text" id="editModelo">
+    </div>
+    <div class="form-group">
+      <label>Ano</label>
+      <input type="text" id="editAno">
+    </div>
+    <div class="form-group">
+      <label>Atril</label>
+      <input type="text" id="editAtril">
+    </div>
+    <div class="form-group">
+      <label>Vidrio</label>
+      <input type="text" id="editVidrio">
+    </div>
+    <div class="form-group">
+      <label>Observacion</label>
+      <input type="text" id="editObs">
+    </div>
+    <div class="form-group">
+      <label>Stock</label>
+      <input type="number" id="editStock" min="0" step="1">
+    </div>
+    <div class="form-group">
+      <label>Costo Compra ($)</label>
+      <input type="number" id="editCosto" min="0" step="1">
+    </div>
+    <div class="form-group">
+      <label>Precio Venta ($)</label>
+      <input type="number" id="editPrecio" min="0" step="1">
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarEdicion()">Guardar Cambios</button>
+      <button class="btn-secondary" onclick="cerrarEditModal()">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <script>
 let productos = [];
 let filtered = [];
-let sortCol = null;
-let sortDir = 1;
 let importData = [];
+let wb = null; // Workbook global
+let productoEditando = null;
+let productoMovimiento = null;
 
-const MAPEO = {
-  'MARCA': ['marca', 'brand', 'marc'],
-  'modelo': ['modelo', 'model', 'model'],
-  'Año': ['año', 'ano', 'a�o', 'year', 'año'],
-  'Atril': ['atril', 'racket', 'ubicacion', 'ubicación', 'posicion', 'posición'],
-  'VIDRIO': ['vidrio', 'glass', 'cristal', 'tipo'],
-  'OBSERVACION': ['observacion', 'observación', 'obs', 'nota', 'note', 'comentario'],
-  'Stock': ['stock', 'cantidad', 'qty', 'quantity', 'invent'],
-  'COSTO_COMPRA': ['costo', 'cost', 'costo compra', 'precio compra', 'compra'],
-  'PRECIO_VENTA': ['precio', 'price', 'precio venta', 'venta', 'precio vent', 'pvp']
-};
-
-function guardarDatos() {
-  fetch('/api/productos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify([])
-  });
+// ===== API CALLS =====
+async function apiGet(endpoint) {
+  const res = await fetch(endpoint);
+  return res.json();
 }
 
+async function apiPost(endpoint, data) {
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+async function apiPut(endpoint, data) {
+  const res = await fetch(endpoint, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+async function apiDelete(endpoint) {
+  const res = await fetch(endpoint, { method: 'DELETE' });
+  return res.json();
+}
+
+// ===== CARGAR DATOS =====
 async function cargarDatos() {
   try {
-    const res = await fetch('/api/productos');
-    if (!res.ok) throw new Error('Sin servidor');
-    productos = await res.json();
+    const [productosData, statsData, alertasData] = await Promise.all([
+      apiGet('/api/productos'),
+      apiGet('/api/stats'),
+      apiGet('/api/alertas')
+    ]);
+    
+    productos = productosData;
     filtered = [...productos];
+    
+    // Actualizar stats
+    document.getElementById('statTotal').textContent = statsData.total;
+    document.getElementById('statConStock').textContent = statsData.con_stock;
+    document.getElementById('statSinStock').textContent = statsData.sin_stock;
+    document.getElementById('statUnidades').textContent = statsData.unidades;
+    document.getElementById('statValor').textContent = '$' + statsData.valor_venta.toLocaleString();
+    
+    // Alertas
+    if (alertasData.length > 0) {
+      document.getElementById('alertBanner').style.display = 'flex';
+      document.getElementById('alertText').textContent = 
+        `Hay ${alertasData.length} productos con stock bajo o agotado.`;
+    } else {
+      document.getElementById('alertBanner').style.display = 'none';
+    }
+    
     render();
   } catch (e) {
-    document.getElementById('tableBody').innerHTML = '<tr class="empty"><td colspan="9">Sin datos. Importa un Excel o agrega productos manualmente.</td></tr>';
+    console.error('Error cargando datos:', e);
   }
 }
 
-function agregarAlServidor(nuevos) {
-  fetch('/api/productos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(nuevos)
-  });
-}
-
+// ===== RENDER TABLA =====
 function render() {
   const tbody = document.getElementById('tableBody');
-  const stats = document.getElementById('stats');
-
-  if (sortCol) {
-    filtered.sort((a, b) => {
-      let va = a[sortCol], vb = b[sortCol];
-      if (typeof va === 'string') va = va.toLowerCase();
-      if (typeof vb === 'string') vb = vb.toLowerCase();
-      if (va < vb) return -1 * sortDir;
-      if (va > vb) return 1 * sortDir;
-      return 0;
-    });
-  }
-
+  
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr class="empty"><td colspan="9">No se encontraron productos</td></tr>';
+    tbody.innerHTML = '<tr class="empty"><td colspan="10">No se encontraron productos</td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map(p => {
+    const stock = p.Stock || 0;
+    let stockClass = 'stock-ok';
+    if (stock === 0) stockClass = 'stock-zero';
+    else if (stock <= 1) stockClass = 'stock-low';
+    
     const costo = p.COSTO_COMPRA ? '$' + Number(p.COSTO_COMPRA).toLocaleString() : '-';
     const precio = p.PRECIO_VENTA ? '$' + Number(p.PRECIO_VENTA).toLocaleString() : '-';
+    
     return `<tr>
-      <td>${p.MARCA}</td>
-      <td>${p.modelo}</td>
-      <td>${p.Año}</td>
-      <td>${p.Atril}</td>
-      <td>${p.VIDRIO}</td>
-      <td>${p.OBSERVACION}</td>
-      <td>${p.Stock || 0}</td>
+      <td>${p.MARCA || '-'}</td>
+      <td>${p.modelo || '-'}</td>
+      <td>${p.Año || '-'}</td>
+      <td>${p.Atril || '-'}</td>
+      <td>${p.VIDRIO || '-'}</td>
+      <td>${p.OBSERVACION || '-'}</td>
+      <td class="${stockClass}">${stock}</td>
       <td>${costo}</td>
       <td>${precio}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-in" onclick="abrirModalMovimiento(${p.id}, 'entrada')" title="Ingresar stock">+</button>
+          <button class="btn-out" onclick="abrirModalMovimiento(${p.id}, 'salida')" title="Quitar stock">-</button>
+          <button class="btn-edit" onclick="abrirEditModal(${p.id})" title="Editar">Editar</button>
+          <button class="btn-del" onclick="eliminarProducto(${p.id})" title="Eliminar">Eliminar</button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
-
-  document.querySelectorAll('th .sort-arrow').forEach(el => el.textContent = '');
-  if (sortCol) {
-    const th = document.querySelector(`th[data-col="${sortCol}"]`);
-    if (th) th.querySelector('.sort-arrow').textContent = sortDir === 1 ? '▲' : '▼';
-  }
 }
 
+// ===== BUSCAR =====
 function buscar() {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   const field = document.getElementById('searchField').value;
+  
   filtered = !q ? [...productos] : productos.filter(p => {
-    if (field === 'todo') return Object.values(p).some(v => String(v).toLowerCase().includes(q));
+    if (field === 'todo') {
+      return Object.values(p).some(v => String(v || '').toLowerCase().includes(q));
+    }
     return String(p[field] || '').toLowerCase().includes(q);
   });
+  
   render();
 }
 
-// ------ TABS ------
+// ===== TABS =====
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    
+    if (btn.dataset.tab === 'movimientos') {
+      cargarMovimientos();
+    }
   });
 });
 
-// ------ SORT ------
-document.querySelectorAll('th[data-col]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.col;
-    if (sortCol === col) { sortDir *= -1; }
-    else { sortCol = col; sortDir = 1; }
-    render();
-  });
-});
-
-// ------ ADD PRODUCT ------
-document.getElementById('addForm').addEventListener('submit', (e) => {
+// ===== AGREGAR PRODUCTO =====
+document.getElementById('addForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = document.getElementById('msg');
   msg.className = 'msg';
@@ -351,28 +641,346 @@ document.getElementById('addForm').addEventListener('submit', (e) => {
     PRECIO_VENTA: parseFloat(document.getElementById('fPrecio').value) || 0
   };
 
-  if (!nuevo.MARCA && !nuevo.modelo) {
+  if (!nuevo.MARCA || !nuevo.modelo) {
     msg.className = 'msg error';
-    msg.textContent = 'Debe ingresar al menos Marca o Modelo.';
+    msg.textContent = 'Debe ingresar al menos Marca y Modelo.';
     msg.style.display = 'block';
     return;
   }
 
-  productos.push(nuevo);
-  agregarAlServidor([nuevo]);
-  filtered = [...productos];
-  render();
-  document.getElementById('addForm').reset();
-  msg.className = 'msg success';
-  msg.textContent = 'Producto agregado correctamente.';
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; }, 3000);
-
-  document.querySelector('[data-tab="buscar"]').click();
-  document.getElementById('searchInput').value = nuevo.MARCA || nuevo.modelo;
-  buscar();
+  try {
+    await apiPost('/api/productos', nuevo);
+    await cargarDatos();
+    document.getElementById('addForm').reset();
+    msg.className = 'msg success';
+    msg.textContent = 'Producto agregado correctamente.';
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 3000);
+  } catch (err) {
+    msg.className = 'msg error';
+    msg.textContent = 'Error al agregar producto.';
+    msg.style.display = 'block';
+  }
 });
 
+// ===== IMPORTAR EXCEL =====
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) procesarArchivo(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) procesarArchivo(fileInput.files[0]);
+});
+
+function procesarArchivo(file) {
+  const importMsg = document.getElementById('importMsg');
+  importMsg.className = 'msg';
+  importMsg.style.display = 'none';
+
+  if (!file.name.match(/\.xlsx?$/i)) {
+    importMsg.className = 'msg error';
+    importMsg.textContent = 'El archivo debe ser .xlsx o .xls';
+    importMsg.style.display = 'block';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      
+      // Mostrar selector de hojas
+      const sheetSelect = document.getElementById('sheetSelect');
+      const dropdown = document.getElementById('sheetSelectDropdown');
+      dropdown.innerHTML = wb.SheetNames.map(name => 
+        `<option value="${name}">${name}</option>`
+      ).join('');
+      sheetSelect.style.display = 'flex';
+      document.getElementById('importPreview').style.display = 'none';
+      
+    } catch (err) {
+      importMsg.className = 'msg error';
+      importMsg.textContent = 'Error al leer el archivo: ' + err.message;
+      importMsg.style.display = 'block';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function procesarHojaSeleccionada() {
+  const sheetName = document.getElementById('sheetSelectDropdown').value;
+  if (!sheetName || !wb) return;
+  
+  const ws = wb.Sheets[sheetName];
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  
+  if (raw.length < 2) {
+    alert('La hoja no tiene suficientes datos.');
+    return;
+  }
+
+  // Encontrar fila de headers
+  let headerRow = 0;
+  for (let i = 0; i < Math.min(5, raw.length); i++) {
+    const row = raw[i].map(c => String(c || '').toLowerCase());
+    const matches = ['marca', 'modelo', 'atril', 'vidrio', 'stock'].filter(k => 
+      row.some(c => c.includes(k))
+    ).length;
+    if (matches >= 3) {
+      headerRow = i;
+      break;
+    }
+  }
+
+  const headers = raw[headerRow].map(h => String(h || '').trim());
+  
+  // Mapeo de columnas
+  const MAPEO = {
+    'MARCA': ['marca', 'brand'],
+    'modelo': ['modelo', 'model'],
+    'Año': ['ano', 'year'],
+    'Atril': ['atril', 'ubicacion', 'posicion'],
+    'VIDRIO': ['vidrio', 'glass', 'cristal'],
+    'OBSERVACION': ['observacion', 'obs', 'nota'],
+    'Stock': ['stock', 'cantidad', 'qty'],
+    'COSTO_COMPRA': ['costo compra', 'costo', 'cost'],
+    'PRECIO_VENTA': ['precio venta', 'precio', 'price', 'venta']
+  };
+
+  function encontrarColumna(posibles) {
+    for (let i = 0; i < headers.length; i++) {
+      const h = headers[i].toLowerCase();
+      for (const p of posibles) {
+        if (h.includes(p)) return i;
+      }
+    }
+    return -1;
+  }
+
+  const colMap = {};
+  for (const [key, posibles] of Object.entries(MAPEO)) {
+    colMap[key] = encontrarColumna(posibles);
+  }
+
+  importData = [];
+  for (let r = headerRow + 1; r < raw.length; r++) {
+    const row = raw[r];
+    if (!row || row.every(c => c == null || c === '')) continue;
+    
+    const p = {};
+    for (const key of Object.keys(MAPEO)) {
+      const ci = colMap[key];
+      if (ci >= 0 && ci < row.length) {
+        if (key === 'Stock' || key === 'COSTO_COMPRA' || key === 'PRECIO_VENTA') {
+          p[key] = parseFloat(row[ci]) || 0;
+        } else {
+          p[key] = String(row[ci] || '').trim();
+        }
+      } else {
+        p[key] = key === 'Stock' || key === 'COSTO_COMPRA' || key === 'PRECIO_VENTA' ? 0 : '';
+      }
+    }
+    
+    if (p.MARCA || p.modelo) {
+      importData.push(p);
+    }
+  }
+
+  if (importData.length === 0) {
+    alert('No se encontraron productos validos en esta hoja.');
+    return;
+  }
+
+  // Mostrar vista previa
+  const labels = ['Marca', 'Modelo', 'Ano', 'Atril', 'Vidrio', 'Obs', 'Stock', 'Costo', 'Precio Venta'];
+  const keys = ['MARCA', 'modelo', 'Año', 'Atril', 'VIDRIO', 'OBSERVACION', 'Stock', 'COSTO_COMPRA', 'PRECIO_VENTA'];
+  
+  document.getElementById('previewHead').innerHTML = labels.map(l => `<th>${l}</th>`).join('');
+  document.getElementById('previewBody').innerHTML = importData.slice(0, 20).map(p => {
+    return `<tr>${keys.map(k => `<td>${p[k] || '-'}</td>`).join('')}</tr>`;
+  }).join('');
+  
+  document.getElementById('previewCount').textContent = 
+    `Mostrando 20 de ${importData.length} productos encontrados.`;
+  document.getElementById('importPreview').style.display = 'block';
+}
+
+document.getElementById('btnImport').addEventListener('click', async () => {
+  if (!importData.length) return;
+  
+  try {
+    const result = await apiPost('/api/importar', { productos: importData });
+    await cargarDatos();
+    
+    const importMsg = document.getElementById('importMsg');
+    importMsg.className = 'msg success';
+    importMsg.textContent = `Se importaron ${result.agregados} productos nuevos. Total: ${result.total}.`;
+    importMsg.style.display = 'block';
+    
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('sheetSelect').style.display = 'none';
+    fileInput.value = '';
+  } catch (err) {
+    alert('Error al importar: ' + err.message);
+  }
+});
+
+document.getElementById('btnCancelImport').addEventListener('click', () => {
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('sheetSelect').style.display = 'none';
+  importData = [];
+  fileInput.value = '';
+});
+
+// ===== MOVIMIENTOS =====
+function abrirModalMovimiento(productoId, tipo) {
+  const producto = productos.find(p => p.id === productoId);
+  if (!producto) return;
+  
+  productoMovimiento = producto;
+  document.getElementById('modalTitle').textContent = tipo === 'entrada' ? 'Ingresar Stock' : 'Quitar Stock';
+  document.getElementById('modalProducto').value = `${producto.MARCA} ${producto.modelo} - ${producto.VIDRIO}`;
+  document.getElementById('modalTipo').value = tipo;
+  document.getElementById('modalCantidad').value = 1;
+  document.getElementById('modalMotivo').value = '';
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function cerrarModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  productoMovimiento = null;
+}
+
+async function guardarMovimiento() {
+  if (!productoMovimiento) return;
+  
+  const tipo = document.getElementById('modalTipo').value;
+  const cantidad = parseInt(document.getElementById('modalCantidad').value);
+  const motivo = document.getElementById('modalMotivo').value.trim();
+  
+  if (cantidad <= 0) {
+    alert('La cantidad debe ser mayor a 0.');
+    return;
+  }
+  
+  try {
+    const result = await apiPost('/api/movimiento', {
+      producto_id: productoMovimiento.id,
+      tipo: tipo,
+      cantidad: cantidad,
+      motivo: motivo
+    });
+    
+    await cargarDatos();
+    cerrarModal();
+  } catch (err) {
+    alert('Error: ' + (err.message || 'No se pudo guardar el movimiento'));
+  }
+}
+
+async function cargarMovimientos() {
+  try {
+    const movimientos = await apiGet('/api/movimientos');
+    const tbody = document.getElementById('movimientosBody');
+    
+    if (movimientos.length === 0) {
+      tbody.innerHTML = '<tr class="empty"><td colspan="5">No hay movimientos registrados</td></tr>';
+      return;
+    }
+    
+    // Ordenar por fecha descendente
+    movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    
+    tbody.innerHTML = movimientos.slice(0, 100).map(m => {
+      const producto = productos.find(p => p.id === m.producto_id);
+      const nombre = producto ? `${producto.MARCA} ${producto.modelo}` : 'Producto eliminado';
+      const fecha = new Date(m.fecha).toLocaleString('es-CL');
+      const tipoClass = m.tipo === 'entrada' ? 'movimiento-entrada' : 'movimiento-salida';
+      const tipoText = m.tipo === 'entrada' ? 'ENTRADA' : 'SALIDA';
+      
+      return `<tr>
+        <td>${fecha}</td>
+        <td class="${tipoClass}">${tipoText}</td>
+        <td>${nombre}</td>
+        <td>${m.cantidad}</td>
+        <td>${m.motivo || '-'}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error cargando movimientos:', err);
+  }
+}
+
+// ===== EDITAR =====
+function abrirEditModal(productoId) {
+  const producto = productos.find(p => p.id === productoId);
+  if (!producto) return;
+  
+  productoEditando = producto;
+  document.getElementById('editMarca').value = producto.MARCA || '';
+  document.getElementById('editModelo').value = producto.modelo || '';
+  document.getElementById('editAno').value = producto.Año || '';
+  document.getElementById('editAtril').value = producto.Atril || '';
+  document.getElementById('editVidrio').value = producto.VIDRIO || '';
+  document.getElementById('editObs').value = producto.OBSERVACION || '';
+  document.getElementById('editStock').value = producto.Stock || 0;
+  document.getElementById('editCosto').value = producto.COSTO_COMPRA || 0;
+  document.getElementById('editPrecio').value = producto.PRECIO_VENTA || 0;
+  document.getElementById('editModalOverlay').classList.add('active');
+}
+
+function cerrarEditModal() {
+  document.getElementById('editModalOverlay').classList.remove('active');
+  productoEditando = null;
+}
+
+async function guardarEdicion() {
+  if (!productoEditando) return;
+  
+  const datos = {
+    MARCA: document.getElementById('editMarca').value.trim().toUpperCase(),
+    modelo: document.getElementById('editModelo').value.trim(),
+    Año: document.getElementById('editAno').value.trim(),
+    Atril: document.getElementById('editAtril').value.trim(),
+    VIDRIO: document.getElementById('editVidrio').value.trim(),
+    OBSERVACION: document.getElementById('editObs').value.trim(),
+    Stock: parseInt(document.getElementById('editStock').value) || 0,
+    COSTO_COMPRA: parseFloat(document.getElementById('editCosto').value) || 0,
+    PRECIO_VENTA: parseFloat(document.getElementById('editPrecio').value) || 0
+  };
+  
+  try {
+    await apiPut(`/api/productos/${productoEditando.id}`, datos);
+    await cargarDatos();
+    cerrarEditModal();
+  } catch (err) {
+    alert('Error al guardar cambios: ' + err.message);
+  }
+}
+
+// ===== ELIMINAR =====
+async function eliminarProducto(id) {
+  const producto = productos.find(p => p.id === id);
+  if (!producto) return;
+  
+  if (!confirm(`Eliminar "${producto.MARCA} ${producto.modelo}"?`)) return;
+  
+  try {
+    await apiDelete(`/api/productos/${id}`);
+    await cargarDatos();
+  } catch (err) {
+    alert('Error al eliminar: ' + err.message);
+  }
+}
+
+// ===== EVENTOS =====
 document.getElementById('btnSearch').addEventListener('click', buscar);
 document.getElementById('btnClear').addEventListener('click', () => {
   document.getElementById('searchInput').value = '';
@@ -383,194 +991,220 @@ document.getElementById('searchInput').addEventListener('keyup', (e) => {
   if (e.key === 'Enter') buscar();
 });
 
-// ------ EXCEL IMPORT ------
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-
-dropZone.addEventListener('click', () => fileInput.click());
-
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.classList.add('dragover');
-});
-dropZone.addEventListener('dragleave', () => {
-  dropZone.classList.remove('dragover');
-});
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  if (e.dataTransfer.files.length) procesarArchivo(e.dataTransfer.files[0]);
-});
-
-fileInput.addEventListener('change', () => {
-  if (fileInput.files.length) procesarArchivo(fileInput.files[0]);
-});
-
-function encontrarColumna(headers, posibles) {
-  for (let i = 0; i < headers.length; i++) {
-    const h = String(headers[i] || '').toLowerCase().trim();
-    for (const p of posibles) {
-      if (h === p || h.includes(p)) return i;
-    }
+// Cerrar modales con Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    cerrarModal();
+    cerrarEditModal();
   }
-  return -1;
-}
+});
 
-function safeStr(v) {
-  if (v == null) return '';
-  if (typeof v === 'number') return String(v);
-  return String(v).trim();
-}
+// ===== VENTAS =====
+let productosVentaActual = [];
 
-function safeNum(v) {
-  if (v == null) return 0;
-  if (typeof v === 'number') return v;
-  const n = parseFloat(String(v).replace(/[$,]/g, ''));
-  return isNaN(n) ? 0 : n;
-}
-
-function procesarArchivo(file) {
-  const importMsg = document.getElementById('importMsg');
-  importMsg.className = 'msg';
-  importMsg.style.display = 'none';
-
-  if (!file.name.match(/\.xlsx?$/i)) {
-    showImportError('El archivo debe ser .xlsx o .xls');
+function buscarProductoVenta() {
+  const q = document.getElementById('buscarProductoVenta').value.trim().toLowerCase();
+  const container = document.getElementById('resultadosVenta');
+  
+  if (!q) {
+    container.innerHTML = '';
     return;
   }
+  
+  const resultados = productos.filter(p => {
+    const texto = `${p.MARCA} ${p.modelo} ${p.Atril} ${p.VIDRIO} ${p.OBSERVACION}`.toLowerCase();
+    return texto.includes(q) && p.Stock > 0;
+  }).slice(0, 10);
+  
+  if (resultados.length === 0) {
+    container.innerHTML = '<p style="color:#999;padding:8px;">No se encontraron productos con stock</p>';
+    return;
+  }
+  
+  container.innerHTML = resultados.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f8f9fa;border-radius:6px;margin-bottom:6px;">
+      <div>
+        <strong>${p.MARCA} ${p.modelo}</strong> - ${p.VIDRIO} 
+        <span style="color:#888;font-size:12px;">Atril: ${p.Atril || '-'} | Stock: ${p.Stock}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:600;color:#27ae60;">$${Number(p.PRECIO_VENTA).toLocaleString()}</span>
+        <button onclick="agregarProductoVenta(${p.id})" style="padding:4px 12px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Agregar</button>
+      </div>
+    </div>
+  `).join('');
+}
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-      if (raw.length < 2) { showImportError('El archivo no tiene suficientes datos.'); return; }
-
-      const headers = raw[0].map(h => String(h || '').trim());
-      const colMap = {};
-      for (const [key, posibles] of Object.entries(MAPEO)) {
-        colMap[key] = encontrarColumna(headers, posibles);
-      }
-
-      renderColumnMap(headers, colMap);
-
-      importData = [];
-      for (let r = 1; r < raw.length; r++) {
-        const row = raw[r];
-        if (!row || row.every(c => c == null || c === '')) continue;
-        const p = {};
-        for (const key of Object.keys(MAPEO)) {
-          const ci = colMap[key];
-          if (ci >= 0 && ci < row.length) {
-            if (key === 'Stock' || key === 'COSTO_COMPRA' || key === 'PRECIO_VENTA') {
-              p[key] = safeNum(row[ci]);
-            } else if (key === 'MARCA') {
-              p[key] = safeStr(row[ci]).toUpperCase();
-            } else {
-              p[key] = safeStr(row[ci]);
-            }
-          } else {
-            p[key] = key === 'Stock' || key === 'COSTO_COMPRA' || key === 'PRECIO_VENTA' ? 0 : '';
-          }
-        }
-        importData.push(p);
-      }
-
-      if (importData.length === 0) { showImportError('No se encontraron filas con datos.'); return; }
-
-      renderPreview(importData.slice(0, 50));
-      document.getElementById('previewCount').textContent =
-        `Mostrando 50 de ${importData.length} filas encontradas.`;
-
-      document.getElementById('importPreview').style.display = 'block';
-      importMsg.style.display = 'none';
-
-    } catch (err) {
-      showImportError('Error al leer el archivo: ' + err.message);
+function agregarProductoVenta(productoId) {
+  const producto = productos.find(p => p.id === productoId);
+  if (!producto) return;
+  
+  const existente = productosVentaActual.find(p => p.producto_id === productoId);
+  if (existente) {
+    if (existente.cantidad < producto.Stock) {
+      existente.cantidad++;
+    } else {
+      alert('No hay más stock disponible');
+      return;
     }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function showImportError(msg) {
-  const el = document.getElementById('importMsg');
-  el.className = 'msg error';
-  el.textContent = msg;
-  el.style.display = 'block';
-  document.getElementById('importPreview').style.display = 'none';
-}
-
-function renderColumnMap(headers, colMap) {
-  const container = document.getElementById('columnMap');
-  let html = '<span style="font-size:13px;font-weight:600;">Columnas detectadas:</span>';
-  for (const [key, idx] of Object.entries(colMap)) {
-    const label = {
-      'MARCA': 'Marca', 'modelo': 'Modelo', 'Año': 'Año', 'Atril': 'Atril',
-      'VIDRIO': 'Vidrio', 'OBSERVACION': 'Obs', 'Stock': 'Stock',
-      'COSTO_COMPRA': 'Costo', 'PRECIO_VENTA': 'Precio Venta'
-    }[key];
-    const icon = idx >= 0 ? '✅' : '❌';
-    const colName = idx >= 0 ? headers[idx] : '(no detectada)';
-    html += `<span style="font-size:12px;padding:4px 10px;background:#f0f2f5;border-radius:4px;">${icon} ${label}: <strong>${colName}</strong></span>`;
+  } else {
+    productosVentaActual.push({
+      producto_id: productoId,
+      MARCA: producto.MARCA,
+      modelo: producto.modelo,
+      VIDRIO: producto.VIDRIO,
+      cantidad: 1,
+      precio_unitario: producto.PRECIO_VENTA
+    });
   }
-  container.innerHTML = html;
+  
+  renderProductosVenta();
 }
 
-function renderPreview(data) {
-  const keys = ['MARCA', 'modelo', 'Año', 'Atril', 'VIDRIO', 'OBSERVACION', 'Stock', 'COSTO_COMPRA', 'PRECIO_VENTA'];
-  const labels = ['Marca', 'Modelo', 'Año', 'Atril', 'Vidrio', 'Obs', 'Stock', 'Costo', 'Precio Venta'];
-  document.getElementById('previewHead').innerHTML = labels.map(l => `<th>${l}</th>`).join('');
-  document.getElementById('previewBody').innerHTML = data.map(p => {
-    const costo = p.COSTO_COMPRA ? '$' + Number(p.COSTO_COMPRA).toLocaleString() : '-';
-    const precio = p.PRECIO_VENTA ? '$' + Number(p.PRECIO_VENTA).toLocaleString() : '-';
-    return `<tr>
-      <td>${p.MARCA}</td>
-      <td>${p.modelo}</td>
-      <td>${p.Año}</td>
-      <td>${p.Atril}</td>
-      <td>${p.VIDRIO}</td>
-      <td>${p.OBSERVACION}</td>
-      <td>${p.Stock || 0}</td>
-      <td>${costo}</td>
-      <td>${precio}</td>
-    </tr>`;
+function renderProductosVenta() {
+  const container = document.getElementById('productosVenta');
+  
+  if (productosVentaActual.length === 0) {
+    container.innerHTML = '<p style="color:#999;padding:12px;text-align:center;">Agrega productos a la venta</p>';
+    document.getElementById('totalVentaActual').textContent = '$0';
+    return;
+  }
+  
+  let total = 0;
+  container.innerHTML = productosVentaActual.map((p, idx) => {
+    const subtotal = p.cantidad * p.precio_unitario;
+    total += subtotal;
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fff;border:1px solid #eee;border-radius:6px;margin-bottom:6px;">
+        <div>
+          <strong>${p.MARCA} ${p.modelo}</strong> - ${p.VIDRIO}
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button onclick="cambiarCantidadVenta(${idx}, -1)" style="width:28px;height:28px;background:#f0f0f0;border:none;border-radius:4px;cursor:pointer;">-</button>
+            <span style="min-width:30px;text-align:center;font-weight:600;">${p.cantidad}</span>
+            <button onclick="cambiarCantidadVenta(${idx}, 1)" style="width:28px;height:28px;background:#f0f0f0;border:none;border-radius:4px;cursor:pointer;">+</button>
+          </div>
+          <span style="font-weight:600;color:#27ae60;min-width:100px;text-align:right;">$${subtotal.toLocaleString()}</span>
+          <button onclick="quitarProductoVenta(${idx})" style="padding:4px 10px;background:#dc3545;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Quitar</button>
+        </div>
+      </div>
+    `;
   }).join('');
+  
+  document.getElementById('totalVentaActual').textContent = '$' + total.toLocaleString();
 }
 
-document.getElementById('btnImport').addEventListener('click', () => {
-  if (!importData.length) return;
-  let added = 0;
-  const nuevos = [];
-  for (const p of importData) {
-    if (!p.MARCA && !p.modelo) continue;
-    productos.push(p);
-    nuevos.push(p);
-    added++;
+function cambiarCantidadVenta(idx, delta) {
+  const item = productosVentaActual[idx];
+  const producto = productos.find(p => p.id === item.producto_id);
+  
+  if (delta > 0 && item.cantidad >= producto.Stock) {
+    alert('No hay más stock disponible');
+    return;
   }
-  if (nuevos.length) agregarAlServidor(nuevos);
-  filtered = [...productos];
-  render();
+  
+  item.cantidad += delta;
+  if (item.cantidad <= 0) {
+    productosVentaActual.splice(idx, 1);
+  }
+  
+  renderProductosVenta();
+}
 
-  const importMsg = document.getElementById('importMsg');
-  importMsg.className = 'msg success';
-  importMsg.textContent = `Se importaron ${added} productos correctamente. Total: ${productos.length} productos.`;
-  importMsg.style.display = 'block';
+function quitarProductoVenta(idx) {
+  productosVentaActual.splice(idx, 1);
+  renderProductosVenta();
+}
 
-  document.getElementById('importPreview').style.display = 'none';
-  importData = [];
-  fileInput.value = '';
-  document.querySelector('[data-tab="buscar"]').click();
-  buscar();
+async function registrarVenta() {
+  if (productosVentaActual.length === 0) {
+    alert('Agrega al menos un producto a la venta');
+    return;
+  }
+  
+  const medioPago = document.getElementById('ventaMedioPago').value;
+  const cliente = document.getElementById('ventaCliente').value.trim();
+  const obs = document.getElementById('ventaObs').value.trim();
+  
+  const productos = productosVentaActual.map(p => ({
+    producto_id: p.producto_id,
+    cantidad: p.cantidad,
+    precio_unitario: p.precio_unitario
+  }));
+  
+  try {
+    const result = await apiPost('/api/ventas', {
+      productos: productos,
+      medio_pago: medioPago,
+      cliente: cliente,
+      observaciones: obs
+    });
+    
+    // Limpiar formulario
+    productosVentaActual = [];
+    renderProductosVenta();
+    document.getElementById('ventaCliente').value = '';
+    document.getElementById('ventaObs').value = '';
+    document.getElementById('buscarProductoVenta').value = '';
+    document.getElementById('resultadosVenta').innerHTML = '';
+    
+    // Mostrar mensaje
+    const msg = document.getElementById('ventasMsg');
+    msg.className = 'msg success';
+    msg.textContent = `Venta #${result.venta.id} registrada correctamente. Total: $${result.venta.total.toLocaleString()}`;
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 5000);
+    
+    // Actualizar datos
+    await cargarDatos();
+    await cargarVentasHoy();
+    
+  } catch (err) {
+    alert('Error al registrar venta: ' + (err.message || 'Error desconocido'));
+  }
+}
+
+async function cargarVentasHoy() {
+  try {
+    const data = await apiGet('/api/ventas/hoy');
+    document.getElementById('ventasHoyCantidad').textContent = data.cantidad_ventas;
+    document.getElementById('ventasHoyTotal').textContent = '$' + data.total_dia.toLocaleString();
+    
+    // Render historial
+    const tbody = document.getElementById('ventasBody');
+    if (data.ventas.length === 0) {
+      tbody.innerHTML = '<tr class="empty"><td colspan="6">No hay ventas registradas hoy</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = data.ventas.map(v => {
+      const fecha = new Date(v.fecha).toLocaleString('es-CL');
+      const productosText = v.productos.map(p => `${p.MARCA} ${p.modelo} x${p.cantidad}`).join(', ');
+      return `<tr>
+        <td>${fecha}</td>
+        <td>${v.cliente || '-'}</td>
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${productosText}</td>
+        <td style="font-weight:600;color:#27ae60;">$${v.total.toLocaleString()}</td>
+        <td>${v.medio_pago}</td>
+        <td>${v.observaciones || '-'}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error cargando ventas:', err);
+  }
+}
+
+// Eventos de tabs - actualizar ventas cuando se cambia a la pestaña
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'ventas') {
+      cargarVentasHoy();
+    }
+  });
 });
 
-document.getElementById('btnCancelImport').addEventListener('click', () => {
-  document.getElementById('importPreview').style.display = 'none';
-  importData = [];
-  fileInput.value = '';
-  document.getElementById('importMsg').style.display = 'none';
-});
-
+// ===== INICIO =====
 cargarDatos();
 </script>
 </body>
