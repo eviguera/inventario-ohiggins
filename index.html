@@ -1089,13 +1089,15 @@ function buscarProductoVenta() {
     return;
   }
   
+  // SOLO productos con stock > 0
   const resultados = productos.filter(p => {
+    if (p.Stock <= 0) return false;
     const texto = `${p.MARCA} ${p.modelo} ${p.Atril} ${p.VIDRIO} ${p.OBSERVACION}`.toLowerCase();
-    return texto.includes(q) && p.Stock > 0;
+    return texto.includes(q);
   }).slice(0, 10);
   
   if (resultados.length === 0) {
-    container.innerHTML = '<p style="color:#999;padding:8px;">No se encontraron productos con stock</p>';
+    container.innerHTML = '<p style="color:#e74c3c;padding:8px;background:#f8d7da;border-radius:6px;">No se encontraron productos con stock disponible</p>';
     return;
   }
   
@@ -1103,7 +1105,7 @@ function buscarProductoVenta() {
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f8f9fa;border-radius:6px;margin-bottom:6px;">
       <div>
         <strong>${p.MARCA} ${p.modelo}</strong> - ${p.VIDRIO} 
-        <span style="color:#888;font-size:12px;">Atril: ${p.Atril || '-'} | Stock: ${p.Stock}</span>
+        <span style="color:${p.Stock <= 1 ? '#e74c3c' : '#27ae60'};font-size:12px;font-weight:600;">Stock: ${p.Stock}</span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         <span style="font-weight:600;color:#27ae60;">$${Number(p.PRECIO_VENTA).toLocaleString()}</span>
@@ -1177,8 +1179,13 @@ function cambiarCantidadVenta(idx, delta) {
   const item = productosVentaActual[idx];
   const producto = productos.find(p => p.id === item.producto_id);
   
+  if (!producto) {
+    alert('Producto no encontrado en inventario');
+    return;
+  }
+  
   if (delta > 0 && item.cantidad >= producto.Stock) {
-    alert('No hay más stock disponible');
+    alert(`Stock máximo disponible: ${producto.Stock}`);
     return;
   }
   
